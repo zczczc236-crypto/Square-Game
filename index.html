@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>NEON DODGE ULTIMATE</title>
+
+<link rel="stylesheet" href="style.css">
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#00ffff">
+
+</head>
+<body>
+
+<!-- 로그인 화면 -->
+<div id="loginScreen">
+  <h1>NEON DODGE</h1>
+  <input type="text" id="usernameInput" placeholder="닉네임 입력">
+  <button onclick="login()">게임 시작</button>
+</div>
+
+<!-- 게임 UI -->
+<div id="mainUI" class="hidden">
+
+  <div class="topbar">
+    <span id="welcomeText"></span>
+    <span>코인: <b id="coins">0</b></span>
+    <span>최고점: <b id="highScore">0</b></span>
+  </div>
+
+  <div id="gameArea">
+    <div id="player"></div>
+  </div>
+
+  <div class="controls">
+    <button onclick="startGame()">시작</button>
+    <button onclick="toggleShop()">상점</button>
+  </div>
+
+</div>
+
+<!-- 상점 -->
+<div id="shop" class="hidden">
+  <h2>스킨 상점</h2>
+  <div class="skin" onclick="buySkin('cyan',0)">기본 (무료)</div>
+  <div class="skin" onclick="buySkin('lime',100)">라임 (100)</div>
+  <div class="skin" onclick="buySkin('magenta',200)">마젠타 (200)</div>
+  <div class="skin" onclick="buySkin('gold',500)">골드 (500)</div>
+  <button onclick="toggleShop()">닫기</button>
+</div>
+
+<!-- 게임오버 -->
+<div id="gameOverScreen" class="hidden">
+  <h2>GAME OVER</h2>
+  <p id="finalScore"></p>
+  <button onclick="startGame()">다시하기</button>
+</div>
+
+<script src="script.js"></script>
+
+</body>
+</html>
