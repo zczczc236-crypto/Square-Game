@@ -26,11 +26,13 @@ const player = document.getElementById("player");
 const gameArea = document.getElementById("gameArea");
 const gameOverScreen = document.getElementById("gameOverScreen");
 const finalScore = document.getElementById("finalScore");
+const shopModal = document.getElementById("shopModal");
 
 // =========================
 // ▶ 로컬 저장/불러오기
 // =========================
 function saveData() {
+  if (!username) return;
   localStorage.setItem(
     "neonDodgeData",
     JSON.stringify({ username, coins, highScore, currentSkin, ownedSkins })
@@ -74,25 +76,25 @@ function login() {
 // =========================
 function startGame() {
   if (gameRunning) return;
-
   score = 0;
   speed = 3;
   gameRunning = true;
-  scoreText.innerText = score;
 
+  scoreText.innerText = score;
   hideGameOver();
+
   gameLoop();
 }
 
 // =========================
-// ▶ 메인 게임 루프
+// ▶ 게임 루프
 // =========================
 function gameLoop() {
   if (!gameRunning) return;
 
   score++;
-  if (score % 150 === 0) speed += 0.5; // 난이도 증가
   scoreText.innerText = score;
+  if (score % 150 === 0) speed += 0.5;
 
   if (Math.random() < 0.03) createEnemy();
 
@@ -106,10 +108,15 @@ function createEnemy() {
   const enemy = document.createElement("div");
   const id = `enemy-${enemyId++}`;
   enemy.id = id;
-  enemy.classList.add("enemy");
+  enemy.className = "enemy"; // classList.add 대신 바로 설정
 
   enemy.style.left = Math.random() * (gameArea.clientWidth - 40) + "px";
   enemy.style.top = "0px";
+  enemy.style.position = "absolute";
+  enemy.style.width = "40px";
+  enemy.style.height = "40px";
+  enemy.style.background = "red";
+
   gameArea.appendChild(enemy);
 
   function move() {
@@ -171,13 +178,13 @@ function endGame() {
 }
 
 // =========================
-// ▶ 상점 열기/닫기
+// ▶ 상점
 // =========================
 function openShop() {
-  document.getElementById("shopModal").classList.remove("hidden");
+  shopModal.classList.remove("hidden");
 }
 function closeShop() {
-  document.getElementById("shopModal").classList.add("hidden");
+  shopModal.classList.add("hidden");
 }
 
 // =========================
@@ -240,13 +247,3 @@ if ("serviceWorker" in navigator) {
     navigator.serviceWorker.register("./service-worker.js");
   });
 }
-
-// =========================
-// ▶ 추가 최적화: 적 제거 자동 정리
-// =========================
-setInterval(() => {
-  document.querySelectorAll(".enemy").forEach((e) => {
-    const top = parseFloat(e.style.top);
-    if (top > gameArea.clientHeight) e.remove();
-  });
-}, 2000);
