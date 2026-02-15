@@ -1,149 +1,218 @@
-let username="";
-let coins=0;
-let highScore=0;
-let currentSkin="cyan";
-let ownedSkins=["cyan"];
+/* =========================
+   NEON SQUARE GAME - FULL
+   로그인(오프라인) + 자동저장
+   스킨상점 + 점수저장
+   ========================= */
 
-let score=0;
-let gameRunning=false;
-let speed=3;
+/* =========================
+   기본 상태
+   ========================= */
 
-const loginScreen=document.getElementById("loginScreen");
-const mainUI=document.getElementById("mainUI");
-const welcomeText=document.getElementById("welcomeText");
-const coinsText=document.getElementById("coins");
-const highScoreText=document.getElementById("highScore");
-const player=document.getElementById("player");
-const gameArea=document.getElementById("gameArea");
-const gameOverScreen=document.getElementById("gameOverScreen");
-const finalScore=document.getElementById("finalScore");
+let canvas = document.getElementById("gameCanvas");
+let ctx = canvas.getContext("2d");
 
-function saveData(){
-  localStorage.setItem("neonData",JSON.stringify({
-    username,coins,highScore,currentSkin,ownedSkins
+let player = {
+  x: 180,
+  y: 180,
+  size: 30,
+  color: "cyan"
+};
+
+let obstacles = [];
+let score = 0;
+let coins = 0;
+let gameOver = false;
+let gameStarted = false;
+let playerName = "";
+
+/* =========================
+   로컬 저장
+   ========================= */
+
+function saveGame() {
+  localStorage.setItem("squareSave", JSON.stringify({
+    coins,
+    selectedSkin: player.color,
+    name: playerName
   }));
 }
 
-function loadData(){
-  const data=JSON.parse(localStorage.getItem("neonData"));
-  if(data){
-    username=data.username;
-    coins=data.coins;
-    highScore=data.highScore;
-    currentSkin=data.currentSkin;
-    ownedSkins=data.ownedSkins;
+function loadGame() {
+  let data = JSON.parse(localStorage.getItem("squareSave"));
+  if (data) {
+    coins = data.coins || 0;
+    player.color = data.selectedSkin || "cyan";
+    playerName = data.name || "";
+    document.getElementById("playerName").value = playerName;
   }
 }
 
-function login(){
-  const input=document.getElementById("usernameInput").value.trim();
-  if(!input) return alert("닉네임 입력");
-  loadData();
-  username=input;
-  welcomeText.innerText=username+" 님";
-  coinsText.innerText=coins;
-  highScoreText.innerText=highScore;
-  player.style.background=currentSkin;
-  loginScreen.classList.add("hidden");
-  mainUI.classList.remove("hidden");
-  saveData();
+/* =========================
+   로그인
+   ========================= */
+
+function login() {
+  let input = document.getElementById("playerName").value.trim();
+  if (!input) return alert("이름 입력");
+
+  playerName = input;
+  localStorage.setItem("squareUser", playerName);
+  document.getElementById("loginScreen").style.display = "none";
+  document.getElementById("mainMenu").style.display = "block";
+  saveGame();
 }
 
-function startGame(){
-  score=0;
-  speed=3;
-  gameRunning=true;
-  gameOverScreen.classList.add("hidden");
-  gameLoop();
-}
-
-function gameLoop(){
-  if(!gameRunning) return;
-  score++;
-  if(score%200===0) speed+=0.5;
-  if(Math.random()<0.03) createEnemy();
-  requestAnimationFrame(gameLoop);
-}
-
-function createEnemy(){
-  const enemy=document.createElement("div");
-  enemy.classList.add("enemy");
-  enemy.style.left=Math.random()*(gameArea.clientWidth-40)+"px";
-  enemy.style.top="0px";
-  gameArea.appendChild(enemy);
-
-  function fall(){
-    if(!gameRunning) return;
-    enemy.style.top=parseFloat(enemy.style.top)+speed+"px";
-
-    if(parseFloat(enemy.style.top)>gameArea.clientHeight-40){
-      enemy.remove();
-      return;
-    }
-
-    if(checkCollision(enemy)){
-      enemy.remove();
-      endGame();
-      return;
-    }
-
-    requestAnimationFrame(fall);
+window.onload = function () {
+  loadGame();
+  let savedUser = localStorage.getItem("squareUser");
+  if (savedUser) {
+    playerName = savedUser;
+    document.getElementById("loginScreen").style.display = "none";
+    document.getElementById("mainMenu").style.display = "block";
   }
-  requestAnimationFrame(fall);
+};
+
+/* =========================
+   게임 시작
+   ========================= */
+
+function startGame() {
+  score = 0;
+  obstacles = [];
+  gameOver = false;
+  gameStarted = true;
+  document.getElementById("mainMenu").style.display = "none";
+  requestAnimationFrame(update);
 }
 
-function checkCollision(enemy){
-  const p=player.getBoundingClientRect();
-  const e=enemy.getBoundingClientRect();
-  return !(p.right<e.left||p.left>e.right||p.bottom<e.top||p.top>e.bottom);
+function endGame() {
+  gameOver = true;
+  gameStarted = false;
+  coins += Math.floor(score / 10);
+  saveGame();
+  alert("게임오버\n점수: " + score);
+  document.getElementById("mainMenu").style.display = "block";
 }
 
-function endGame(){
-  gameRunning=false;
-  coins+=Math.floor(score/10);
-  if(score>highScore) highScore=score;
-  coinsText.innerText=coins;
-  highScoreText.innerText=highScore;
-  finalScore.innerText="점수: "+score;
-  gameOverScreen.classList.remove("hidden");
-  saveData();
-}
+/* =========================
+   입력
+   ========================= */
 
-function buySkin(color,price){
-  if(ownedSkins.includes(color)){
-    currentSkin=color;
-  }else{
-    if(coins<price) return alert("코인 부족");
-    coins-=price;
-    ownedSkins.push(color);
-    currentSkin=color;
-  }
-  player.style.background=color;
-  coinsText.innerText=coins;
-  saveData();
-}
+document.addEventListener("keydown", (e) => {
+  if (!gameStarted) return;
 
-function toggleShop(){
-  document.getElementById("shop").classList.toggle("hidden");
-}
-
-gameArea.addEventListener("mousemove",e=>{
-  const rect=gameArea.getBoundingClientRect();
-  let x=e.clientX-rect.left-20;
-  x=Math.max(0,Math.min(x,gameArea.clientWidth-40));
-  player.style.left=x+"px";
+  if (e.key === "ArrowUp") player.y -= 20;
+  if (e.key === "ArrowDown") player.y += 20;
+  if (e.key === "ArrowLeft") player.x -= 20;
+  if (e.key === "ArrowRight") player.x += 20;
 });
 
-gameArea.addEventListener("touchmove",e=>{
-  const rect=gameArea.getBoundingClientRect();
-  let x=e.touches[0].clientX-rect.left-20;
-  x=Math.max(0,Math.min(x,gameArea.clientWidth-40));
-  player.style.left=x+"px";
-});
+/* =========================
+   장애물 생성
+   ========================= */
 
-// PWA 안전 등록 (GitHub Pages 완벽 대응)
-if("serviceWorker" in navigator){
-  window.addEventListener("load",()=>{
-    navigator.serviceWorker.register("./service-worker.js");
+function spawnObstacle() {
+  obstacles.push({
+    x: Math.random() * (canvas.width - 20),
+    y: -20,
+    size: 20,
+    speed: 2 + Math.random() * 3
   });
+}
+
+/* =========================
+   충돌 체크
+   ========================= */
+
+function checkCollision(a, b) {
+  return (
+    a.x < b.x + b.size &&
+    a.x + a.size > b.x &&
+    a.y < b.y + b.size &&
+    a.y + a.size > b.y
+  );
+}
+
+/* =========================
+   업데이트 루프
+   ========================= */
+
+function update() {
+  if (gameOver) return;
+
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+  // 플레이어
+  ctx.fillStyle = player.color;
+  ctx.fillRect(player.x, player.y, player.size, player.size);
+
+  // 장애물
+  if (Math.random() < 0.02) spawnObstacle();
+
+  obstacles.forEach((obs, index) => {
+    obs.y += obs.speed;
+    ctx.fillStyle = "red";
+    ctx.fillRect(obs.x, obs.y, obs.size, obs.size);
+
+    if (checkCollision(player, obs)) {
+      endGame();
+    }
+
+    if (obs.y > canvas.height) {
+      obstacles.splice(index, 1);
+      score++;
+    }
+  });
+
+  // 점수 표시
+  ctx.fillStyle = "white";
+  ctx.font = "16px Arial";
+  ctx.fillText("Score: " + score, 10, 20);
+  ctx.fillText("Coins: " + coins, 10, 40);
+
+  requestAnimationFrame(update);
+}
+
+/* =========================
+   상점
+   ========================= */
+
+function openShop() {
+  document.getElementById("shopModal").classList.remove("hidden");
+}
+
+function closeShop() {
+  document.getElementById("shopModal").classList.add("hidden");
+}
+
+function buySkin(type) {
+  if (type === "default") {
+    player.color = "cyan";
+  }
+
+  if (type === "lime" && coins >= 100) {
+    coins -= 100;
+    player.color = "lime";
+  }
+
+  if (type === "magenta" && coins >= 200) {
+    coins -= 200;
+    player.color = "magenta";
+  }
+
+  if (type === "gold" && coins >= 500) {
+    coins -= 500;
+    player.color = "gold";
+  }
+
+  saveGame();
+  closeShop();
+}
+
+/* =========================
+   PWA 등록
+   ========================= */
+
+if ("serviceWorker" in navigator) {
+  navigator.serviceWorker.register("./service-worker.js");
 }
