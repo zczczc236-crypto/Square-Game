@@ -1,182 +1,177 @@
-/* =========================
-   NEON SQUARE GAME - FULL
-   로그인(오프라인) + 자동저장
-   스킨상점 + 점수저장
-   ========================= */
-
-/* =========================
-   기본 상태
-   ========================= */
-
-let canvas = document.getElementById("gameCanvas");
-let ctx = canvas.getContext("2d");
-
-let player = {
-  x: 180,
-  y: 180,
-  size: 30,
-  color: "cyan"
-};
-
-let obstacles = [];
-let score = 0;
+// =========================
+// ▶ 게임/로그인 데이터
+// =========================
+let username = "";
 let coins = 0;
-let gameOver = false;
-let gameStarted = false;
-let playerName = "";
+let highScore = 0;
+let currentSkin = "cyan";
+let ownedSkins = ["cyan"];
 
-/* =========================
-   로컬 저장
-   ========================= */
+let score = 0;
+let gameRunning = false;
+let speed = 3;
 
-function saveGame() {
-  localStorage.setItem("squareSave", JSON.stringify({
-    coins,
-    selectedSkin: player.color,
-    name: playerName
-  }));
-}
+// =========================
+// ▶ UI DOM 가져오기
+// =========================
+const loginScreen = document.getElementById("loginScreen");
+const mainUI = document.getElementById("mainUI");
+const welcomeText = document.getElementById("welcomeText");
+const coinsText = document.getElementById("coins");
+const highScoreText = document.getElementById("highScore");
 
-function loadGame() {
-  let data = JSON.parse(localStorage.getItem("squareSave"));
-  if (data) {
-    coins = data.coins || 0;
-    player.color = data.selectedSkin || "cyan";
-    playerName = data.name || "";
-    document.getElementById("playerName").value = playerName;
-  }
-}
+const player = document.getElementById("player");
+const gameArea = document.getElementById("gameArea");
 
-/* =========================
-   로그인
-   ========================= */
+const gameOverScreen = document.getElementById("gameOverScreen");
+const finalScore = document.getElementById("finalScore");
 
-function login() {
-  let input = document.getElementById("playerName").value.trim();
-  if (!input) return alert("이름 입력");
-
-  playerName = input;
-  localStorage.setItem("squareUser", playerName);
-  document.getElementById("loginScreen").style.display = "none";
-  document.getElementById("mainMenu").style.display = "block";
-  saveGame();
-}
-
-window.onload = function () {
-  loadGame();
-  let savedUser = localStorage.getItem("squareUser");
-  if (savedUser) {
-    playerName = savedUser;
-    document.getElementById("loginScreen").style.display = "none";
-    document.getElementById("mainMenu").style.display = "block";
-  }
-};
-
-/* =========================
-   게임 시작
-   ========================= */
-
-function startGame() {
-  score = 0;
-  obstacles = [];
-  gameOver = false;
-  gameStarted = true;
-  document.getElementById("mainMenu").style.display = "none";
-  requestAnimationFrame(update);
-}
-
-function endGame() {
-  gameOver = true;
-  gameStarted = false;
-  coins += Math.floor(score / 10);
-  saveGame();
-  alert("게임오버\n점수: " + score);
-  document.getElementById("mainMenu").style.display = "block";
-}
-
-/* =========================
-   입력
-   ========================= */
-
-document.addEventListener("keydown", (e) => {
-  if (!gameStarted) return;
-
-  if (e.key === "ArrowUp") player.y -= 20;
-  if (e.key === "ArrowDown") player.y += 20;
-  if (e.key === "ArrowLeft") player.x -= 20;
-  if (e.key === "ArrowRight") player.x += 20;
-});
-
-/* =========================
-   장애물 생성
-   ========================= */
-
-function spawnObstacle() {
-  obstacles.push({
-    x: Math.random() * (canvas.width - 20),
-    y: -20,
-    size: 20,
-    speed: 2 + Math.random() * 3
-  });
-}
-
-/* =========================
-   충돌 체크
-   ========================= */
-
-function checkCollision(a, b) {
-  return (
-    a.x < b.x + b.size &&
-    a.x + a.size > b.x &&
-    a.y < b.y + b.size &&
-    a.y + a.size > b.y
+// =========================
+// ▶ 로컬 저장/불러오기
+// =========================
+function saveData() {
+  localStorage.setItem(
+    "neonDodgeData",
+    JSON.stringify({
+      username,
+      coins,
+      highScore,
+      currentSkin,
+      ownedSkins,
+    })
   );
 }
 
-/* =========================
-   업데이트 루프
-   ========================= */
-
-function update() {
-  if (gameOver) return;
-
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-
-  // 플레이어
-  ctx.fillStyle = player.color;
-  ctx.fillRect(player.x, player.y, player.size, player.size);
-
-  // 장애물
-  if (Math.random() < 0.02) spawnObstacle();
-
-  obstacles.forEach((obs, index) => {
-    obs.y += obs.speed;
-    ctx.fillStyle = "red";
-    ctx.fillRect(obs.x, obs.y, obs.size, obs.size);
-
-    if (checkCollision(player, obs)) {
-      endGame();
-    }
-
-    if (obs.y > canvas.height) {
-      obstacles.splice(index, 1);
-      score++;
-    }
-  });
-
-  // 점수 표시
-  ctx.fillStyle = "white";
-  ctx.font = "16px Arial";
-  ctx.fillText("Score: " + score, 10, 20);
-  ctx.fillText("Coins: " + coins, 10, 40);
-
-  requestAnimationFrame(update);
+function loadData() {
+  const data = JSON.parse(localStorage.getItem("neonDodgeData"));
+  if (data) {
+    username = data.username;
+    coins = data.coins;
+    highScore = data.highScore;
+    currentSkin = data.currentSkin;
+    ownedSkins = data.ownedSkins;
+  }
 }
 
-/* =========================
-   상점
-   ========================= */
+// =========================
+// ▶ 로그인 처리
+// =========================
+function login() {
+  const input = document.getElementById("usernameInput").value.trim();
+  if (!input) return alert("닉네임을 입력하세요.");
 
+  loadData();  
+  username = input;
+
+  welcomeText.innerText = `${username} 님!`;
+  coinsText.innerText = coins;
+  highScoreText.innerText = highScore;
+
+  player.style.background = currentSkin;
+
+  loginScreen.classList.add("hidden");
+  mainUI.classList.remove("hidden");
+
+  saveData();
+}
+
+// =========================
+// ▶ 게임 시작
+// =========================
+function startGame() {
+  score = 0;
+  speed = 3;
+  gameRunning = true;
+
+  updateScoreDisplay();
+  hideGameOver();
+  gameLoop();
+}
+
+// =========================
+// ▶ 메인 게임 루프
+// =========================
+function gameLoop() {
+  if (!gameRunning) return;
+
+  score++;
+  if (score % 150 === 0) speed += 0.5;
+
+  if (Math.random() < 0.03) createEnemy();
+  updateScoreDisplay();
+
+  requestAnimationFrame(gameLoop);
+}
+
+function updateScoreDisplay() {
+  document.getElementById("score").innerText = score;
+}
+
+// =========================
+// ▶ 적 생성/이동
+// =========================
+function createEnemy() {
+  const enemy = document.createElement("div");
+  enemy.classList.add("enemy");
+
+  enemy.style.left = Math.random() * (gameArea.clientWidth - 40) + "px";
+  enemy.style.top = "0px";
+
+  gameArea.appendChild(enemy);
+
+  function move() {
+    if (!gameRunning) return;
+
+    enemy.style.top = parseFloat(enemy.style.top) + speed + "px";
+
+    if (parseFloat(enemy.style.top) > gameArea.clientHeight - 40) {
+      enemy.remove();
+      return;
+    }
+
+    if (checkCollision(enemy)) {
+      enemy.remove();
+      endGame();
+      return;
+    }
+
+    requestAnimationFrame(move);
+  }
+  requestAnimationFrame(move);
+}
+
+function checkCollision(enemy) {
+  const p = player.getBoundingClientRect();
+  const e = enemy.getBoundingClientRect();
+
+  return !(
+    p.right < e.left ||
+    p.left > e.right ||
+    p.bottom < e.top ||
+    p.top > e.bottom
+  );
+}
+
+// =========================
+// ▶ 게임 종료 처리
+// =========================
+function endGame() {
+  gameRunning = false;
+
+  coins += Math.floor(score / 10);
+  if (score > highScore) highScore = score;
+
+  coinsText.innerText = coins;
+  highScoreText.innerText = highScore;
+  finalScore.innerText = `점수: ${score}`;
+
+  saveData();
+  showGameOver();
+}
+
+// =========================
+// ▶ 상점열기/닫기
+// =========================
 function openShop() {
   document.getElementById("shopModal").classList.remove("hidden");
 }
@@ -185,34 +180,67 @@ function closeShop() {
   document.getElementById("shopModal").classList.add("hidden");
 }
 
-function buySkin(type) {
-  if (type === "default") {
-    player.color = "cyan";
+// =========================
+// ▶ 스킨 구매/적용
+// =========================
+function buySkin(color) {
+  let price = 0;
+  if (color === "lime") price = 100;
+  if (color === "magenta") price = 200;
+  if (color === "gold") price = 500;
+
+  if (ownedSkins.includes(color)) {
+    currentSkin = color;
+  } else {
+    if (coins < price) {
+      alert("코인이 부족합니다!");
+      return;
+    }
+    coins -= price;
+    ownedSkins.push(color);
+    currentSkin = color;
   }
 
-  if (type === "lime" && coins >= 100) {
-    coins -= 100;
-    player.color = "lime";
-  }
+  player.style.background = currentSkin;
+  coinsText.innerText = coins;
 
-  if (type === "magenta" && coins >= 200) {
-    coins -= 200;
-    player.color = "magenta";
-  }
-
-  if (type === "gold" && coins >= 500) {
-    coins -= 500;
-    player.color = "gold";
-  }
-
-  saveGame();
+  saveData();
   closeShop();
 }
 
-/* =========================
-   PWA 등록
-   ========================= */
+// =========================
+// ▶ UI 표시/숨김
+// =========================
+function showGameOver() {
+  gameOverScreen.classList.remove("hidden");
+}
 
+function hideGameOver() {
+  gameOverScreen.classList.add("hidden");
+}
+
+// =========================
+// ▶ 플레이어 이동 (마우스 + 터치)
+// =========================
+gameArea.addEventListener("mousemove", (e) => {
+  const rect = gameArea.getBoundingClientRect();
+  let x = e.clientX - rect.left - 20;
+  x = Math.max(0, Math.min(x, gameArea.clientWidth - 40));
+  player.style.left = x + "px";
+});
+
+gameArea.addEventListener("touchmove", (e) => {
+  const rect = gameArea.getBoundingClientRect();
+  let x = e.touches[0].clientX - rect.left - 20;
+  x = Math.max(0, Math.min(x, gameArea.clientWidth - 40));
+  player.style.left = x + "px";
+});
+
+// =========================
+// ▶ PWA 서비스워커 등록
+// =========================
 if ("serviceWorker" in navigator) {
-  navigator.serviceWorker.register("./service-worker.js");
+  window.addEventListener("load", () => {
+    navigator.serviceWorker.register("./service-worker.js");
+  });
 }
