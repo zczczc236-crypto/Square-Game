@@ -1,16 +1,23 @@
-const CACHE_NAME="neon-cache-v1";
-const urlsToCache=["/","index.html","style.css","script.js","manifest.json"];
+const CACHE_NAME="neon-cache-v3";
 
-self.addEventListener("install", e=>{
-  e.waitUntil(
+const urlsToCache=[
+  "./",
+  "./index.html",
+  "./style.css",
+  "./script.js",
+  "./manifest.json"
+];
+
+self.addEventListener("install",event=>{
+  event.waitUntil(
     caches.open(CACHE_NAME)
-    .then(cache=>cache.addAll(urlsToCache))
+      .then(cache=>cache.addAll(urlsToCache))
   );
 });
 
-self.addEventListener("fetch", e=>{
-  e.respondWith(
-    caches.match(e.request)
-    .then(response=>response||fetch(e.request))
+self.addEventListener("fetch",event=>{
+  event.respondWith(
+    caches.match(event.request)
+      .then(response=>response||fetch(event.request))
   );
 });
