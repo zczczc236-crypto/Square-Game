@@ -37,14 +37,19 @@
 
 </div>
 
-<div id="shop" class="hidden center">
-  <h2>스킨 상점</h2>
-  <div class="skin" onclick="buySkin('cyan',0)">기본 (무료)</div>
-  <div class="skin" onclick="buySkin('lime',100)">라임 (100)</div>
-  <div class="skin" onclick="buySkin('magenta',200)">마젠타 (200)</div>
-  <div class="skin" onclick="buySkin('gold',500)">골드 (500)</div>
-  <button onclick="toggleShop()">닫기</button>
+<div id="shopModal" class="modal hidden">
+  <div class="modal-content">
+    <h2>스킨 상점</h2>
+
+    <button onclick="buySkin('default')">기본 (무료)</button>
+    <button onclick="buySkin('lime')">라임 (100)</button>
+    <button onclick="buySkin('magenta')">마젠타 (200)</button>
+    <button onclick="buySkin('gold')">골드 (500)</button>
+
+    <button class="close-btn" onclick="closeShop()">닫기</button>
+  </div>
 </div>
+
 
 <div id="gameOverScreen" class="hidden center">
   <h2>GAME OVER</h2>
