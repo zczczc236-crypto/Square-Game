@@ -3,23 +3,21 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>NEON DODGE ULTIMATE</title>
+<title>NEON DODGE</title>
 
-<link rel="stylesheet" href="style.css">
-<link rel="manifest" href="manifest.json">
+<link rel="stylesheet" href="./style.css">
+<link rel="manifest" href="./manifest.json">
 <meta name="theme-color" content="#00ffff">
 
 </head>
 <body>
 
-<!-- 로그인 화면 -->
-<div id="loginScreen">
+<div id="loginScreen" class="center">
   <h1>NEON DODGE</h1>
   <input type="text" id="usernameInput" placeholder="닉네임 입력">
   <button onclick="login()">게임 시작</button>
 </div>
 
-<!-- 게임 UI -->
 <div id="mainUI" class="hidden">
 
   <div class="topbar">
@@ -39,8 +37,7 @@
 
 </div>
 
-<!-- 상점 -->
-<div id="shop" class="hidden">
+<div id="shop" class="hidden center">
   <h2>스킨 상점</h2>
   <div class="skin" onclick="buySkin('cyan',0)">기본 (무료)</div>
   <div class="skin" onclick="buySkin('lime',100)">라임 (100)</div>
@@ -49,14 +46,12 @@
   <button onclick="toggleShop()">닫기</button>
 </div>
 
-<!-- 게임오버 -->
-<div id="gameOverScreen" class="hidden">
+<div id="gameOverScreen" class="hidden center">
   <h2>GAME OVER</h2>
   <p id="finalScore"></p>
   <button onclick="startGame()">다시하기</button>
 </div>
 
-<script src="script.js"></script>
-
+<script src="./script.js"></script>
 </body>
 </html>
