@@ -10,6 +10,7 @@ let ownedSkins = ["cyan"];
 let score = 0;
 let gameRunning = false;
 let speed = 3;
+let enemyId = 0;
 
 // =========================
 // ▶ UI DOM 가져오기
@@ -19,10 +20,10 @@ const mainUI = document.getElementById("mainUI");
 const welcomeText = document.getElementById("welcomeText");
 const coinsText = document.getElementById("coins");
 const highScoreText = document.getElementById("highScore");
+const scoreText = document.getElementById("score");
 
 const player = document.getElementById("player");
 const gameArea = document.getElementById("gameArea");
-
 const gameOverScreen = document.getElementById("gameOverScreen");
 const finalScore = document.getElementById("finalScore");
 
@@ -32,20 +33,13 @@ const finalScore = document.getElementById("finalScore");
 function saveData() {
   localStorage.setItem(
     "neonDodgeData",
-    JSON.stringify({
-      username,
-      coins,
-      highScore,
-      currentSkin,
-      ownedSkins,
-    })
+    JSON.stringify({ username, coins, highScore, currentSkin, ownedSkins })
   );
 }
 
-function loadData() {
+function loadData(name) {
   const data = JSON.parse(localStorage.getItem("neonDodgeData"));
-  if (data) {
-    username = data.username;
+  if (data && data.username === name) {
     coins = data.coins;
     highScore = data.highScore;
     currentSkin = data.currentSkin;
@@ -60,13 +54,13 @@ function login() {
   const input = document.getElementById("usernameInput").value.trim();
   if (!input) return alert("닉네임을 입력하세요.");
 
-  loadData();  
   username = input;
+  loadData(username);
 
   welcomeText.innerText = `${username} 님!`;
   coinsText.innerText = coins;
   highScoreText.innerText = highScore;
-
+  scoreText.innerText = score;
   player.style.background = currentSkin;
 
   loginScreen.classList.add("hidden");
@@ -79,11 +73,13 @@ function login() {
 // ▶ 게임 시작
 // =========================
 function startGame() {
+  if (gameRunning) return;
+
   score = 0;
   speed = 3;
   gameRunning = true;
+  scoreText.innerText = score;
 
-  updateScoreDisplay();
   hideGameOver();
   gameLoop();
 }
@@ -95,16 +91,12 @@ function gameLoop() {
   if (!gameRunning) return;
 
   score++;
-  if (score % 150 === 0) speed += 0.5;
+  if (score % 150 === 0) speed += 0.5; // 난이도 증가
+  scoreText.innerText = score;
 
   if (Math.random() < 0.03) createEnemy();
-  updateScoreDisplay();
 
   requestAnimationFrame(gameLoop);
-}
-
-function updateScoreDisplay() {
-  document.getElementById("score").innerText = score;
 }
 
 // =========================
@@ -112,26 +104,31 @@ function updateScoreDisplay() {
 // =========================
 function createEnemy() {
   const enemy = document.createElement("div");
+  const id = `enemy-${enemyId++}`;
+  enemy.id = id;
   enemy.classList.add("enemy");
 
   enemy.style.left = Math.random() * (gameArea.clientWidth - 40) + "px";
   enemy.style.top = "0px";
-
   gameArea.appendChild(enemy);
 
   function move() {
-    if (!gameRunning) return;
+    if (!gameRunning || !document.getElementById(id)) {
+      enemy.remove();
+      return;
+    }
 
-    enemy.style.top = parseFloat(enemy.style.top) + speed + "px";
+    const top = parseFloat(enemy.style.top) + speed;
+    enemy.style.top = top + "px";
 
-    if (parseFloat(enemy.style.top) > gameArea.clientHeight - 40) {
+    if (top > gameArea.clientHeight - 40) {
       enemy.remove();
       return;
     }
 
     if (checkCollision(enemy)) {
-      enemy.remove();
       endGame();
+      enemy.remove();
       return;
     }
 
@@ -140,6 +137,9 @@ function createEnemy() {
   requestAnimationFrame(move);
 }
 
+// =========================
+// ▶ 충돌 체크
+// =========================
 function checkCollision(enemy) {
   const p = player.getBoundingClientRect();
   const e = enemy.getBoundingClientRect();
@@ -153,9 +153,10 @@ function checkCollision(enemy) {
 }
 
 // =========================
-// ▶ 게임 종료 처리
+// ▶ 게임 종료
 // =========================
 function endGame() {
+  if (!gameRunning) return;
   gameRunning = false;
 
   coins += Math.floor(score / 10);
@@ -170,12 +171,11 @@ function endGame() {
 }
 
 // =========================
-// ▶ 상점열기/닫기
+// ▶ 상점 열기/닫기
 // =========================
 function openShop() {
   document.getElementById("shopModal").classList.remove("hidden");
 }
-
 function closeShop() {
   document.getElementById("shopModal").classList.add("hidden");
 }
@@ -184,18 +184,13 @@ function closeShop() {
 // ▶ 스킨 구매/적용
 // =========================
 function buySkin(color) {
-  let price = 0;
-  if (color === "lime") price = 100;
-  if (color === "magenta") price = 200;
-  if (color === "gold") price = 500;
+  const prices = { lime: 100, magenta: 200, gold: 500 };
+  const price = prices[color] || 0;
 
   if (ownedSkins.includes(color)) {
     currentSkin = color;
   } else {
-    if (coins < price) {
-      alert("코인이 부족합니다!");
-      return;
-    }
+    if (coins < price) return alert("코인이 부족합니다!");
     coins -= price;
     ownedSkins.push(color);
     currentSkin = color;
@@ -214,7 +209,6 @@ function buySkin(color) {
 function showGameOver() {
   gameOverScreen.classList.remove("hidden");
 }
-
 function hideGameOver() {
   gameOverScreen.classList.add("hidden");
 }
@@ -222,25 +216,37 @@ function hideGameOver() {
 // =========================
 // ▶ 플레이어 이동 (마우스 + 터치)
 // =========================
-gameArea.addEventListener("mousemove", (e) => {
+function movePlayer(x) {
   const rect = gameArea.getBoundingClientRect();
-  let x = e.clientX - rect.left - 20;
-  x = Math.max(0, Math.min(x, gameArea.clientWidth - 40));
+  x = Math.max(0, Math.min(x - rect.left - 20, gameArea.clientWidth - 40));
   player.style.left = x + "px";
-});
+}
 
-gameArea.addEventListener("touchmove", (e) => {
-  const rect = gameArea.getBoundingClientRect();
-  let x = e.touches[0].clientX - rect.left - 20;
-  x = Math.max(0, Math.min(x, gameArea.clientWidth - 40));
-  player.style.left = x + "px";
-});
+gameArea.addEventListener("mousemove", (e) => movePlayer(e.clientX));
+gameArea.addEventListener(
+  "touchmove",
+  (e) => {
+    e.preventDefault();
+    movePlayer(e.touches[0].clientX);
+  },
+  { passive: false }
+);
 
 // =========================
-// ▶ PWA 서비스워커 등록
+// ▶ PWA 서비스워커
 // =========================
 if ("serviceWorker" in navigator) {
   window.addEventListener("load", () => {
     navigator.serviceWorker.register("./service-worker.js");
   });
 }
+
+// =========================
+// ▶ 추가 최적화: 적 제거 자동 정리
+// =========================
+setInterval(() => {
+  document.querySelectorAll(".enemy").forEach((e) => {
+    const top = parseFloat(e.style.top);
+    if (top > gameArea.clientHeight) e.remove();
+  });
+}, 2000);
