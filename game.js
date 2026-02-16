@@ -41,7 +41,7 @@ function initAudio() {
     audioReady = true;
     console.log("Audio unlocked!");
   }).catch(err => {
-    
+    console.warn("Audio unlock failed:", err);
   });
 }
 
