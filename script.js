@@ -9,9 +9,10 @@ function initAudio() {
   bgm.loop = true;
   bgm.volume = 0.4;
 
-  sfxScore = new Audio("assets/audio/score.wav");
-  sfxBuy = new Audio("assets/audio/buy.wav");
-  sfxGameOver = new Audio("assets/audio/gameover.wav");
+bgm = new Audio("/Square-Game/assets/audio/bgm.mp3");
+sfxScore = new Audio("/Square-Game/assets/audio/score.wav");
+sfxBuy = new Audio("/Square-Game/assets/audio/buy.wav");
+sfxGameOver = new Audio("/Square-Game/assets/audio/gameover.wav");
 
   document.removeEventListener("click", initAudio);
   document.removeEventListener("touchstart", initAudio);
