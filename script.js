@@ -1,5 +1,5 @@
 // ===============================
-// NEON DODGE - CLEAN START VERSION
+// NEON DODGE - MOBILE + DIFFICULTY
 // ===============================
 
 let canvas = document.getElementById("gameCanvas");
@@ -13,6 +13,10 @@ let currentSkin = "default";
 let gameRunning = false;
 let score = 0;
 
+let difficulty = "normal";
+let spawnRate = 0.03;
+let speedMultiplier = 1;
+
 let player = {
   x: 150,
   y: 350,
@@ -23,7 +27,7 @@ let player = {
 let obstacles = [];
 
 // ===============================
-// 🔥 페이지 로드시 강제 초기화
+// 초기화
 // ===============================
 
 window.onload = function () {
@@ -41,10 +45,7 @@ window.onload = function () {
 
 function login() {
   const nameInput = document.getElementById("nameInput");
-  if (!nameInput.value.trim()) {
-    alert("닉네임 입력");
-    return;
-  }
+  if (!nameInput.value.trim()) return alert("닉네임 입력");
 
   playerName = nameInput.value.trim();
 
@@ -54,10 +55,6 @@ function login() {
     coins = save.coins;
     highScore = save.highScore;
     currentSkin = save.skin;
-  } else {
-    coins = 0;
-    highScore = 0;
-    currentSkin = "default";
   }
 
   document.getElementById("loginScreen").style.display = "none";
@@ -65,6 +62,31 @@ function login() {
 
   updateMenu();
   saveGame();
+}
+
+// ===============================
+// 난이도 설정
+// ===============================
+
+function setDifficulty(mode) {
+  difficulty = mode;
+
+  if (mode === "easy") {
+    spawnRate = 0.02;
+    speedMultiplier = 0.8;
+  }
+
+  if (mode === "normal") {
+    spawnRate = 0.03;
+    speedMultiplier = 1;
+  }
+
+  if (mode === "hard") {
+    spawnRate = 0.05;
+    speedMultiplier = 1.4;
+  }
+
+  alert("난이도: " + mode.toUpperCase());
 }
 
 // ===============================
@@ -82,10 +104,6 @@ function saveGame() {
 
   localStorage.setItem("squareSave_" + playerName, JSON.stringify(saveData));
 }
-
-// ===============================
-// 메뉴
-// ===============================
 
 function updateMenu() {
   document.getElementById("coinText").innerText = "코인: " + coins;
@@ -124,7 +142,8 @@ function gameLoop() {
   updateObstacles();
   drawObstacles();
 
-  score++;
+  score += difficulty === "hard" ? 2 : 1;
+
   if (score > highScore) highScore = score;
 
   ctx.fillStyle = "white";
@@ -156,12 +175,12 @@ function getSkinColor() {
 // ===============================
 
 function updateObstacles() {
-  if (Math.random() < 0.03) {
+  if (Math.random() < spawnRate) {
     obstacles.push({
       x: Math.random() * (canvas.width - 30),
       y: -30,
       size: 30,
-      speed: 4 + score * 0.002
+      speed: (4 + score * 0.002) * speedMultiplier
     });
   }
 
@@ -208,7 +227,7 @@ function endGame() {
 }
 
 // ===============================
-// 키보드 이동
+// PC 키보드 이동
 // ===============================
 
 document.addEventListener("keydown", e => {
@@ -219,6 +238,24 @@ document.addEventListener("keydown", e => {
 
   player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
 });
+
+// ===============================
+// 📱 모바일 터치 이동
+// ===============================
+
+canvas.addEventListener("touchstart", moveTouch);
+canvas.addEventListener("touchmove", moveTouch);
+
+function moveTouch(e) {
+  if (!gameRunning) return;
+
+  let touchX = e.touches[0].clientX;
+  let rect = canvas.getBoundingClientRect();
+  let x = touchX - rect.left;
+
+  player.x = x - player.size / 2;
+  player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
+}
 
 // ===============================
 // 상점
