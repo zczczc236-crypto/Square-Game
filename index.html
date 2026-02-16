@@ -5,71 +5,95 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NEON DODGE</title>
 
-<link rel="stylesheet" href="./style.css">
+<style>
+body{
+  margin:0;
+  font-family:sans-serif;
+  background:linear-gradient(to bottom,#333,#111);
+  color:white;
+  text-align:center;
+}
+
+.screen{
+  position:absolute;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  background:#000;
+  z-index:10;
+}
+
+.hidden{display:none;}
+
+button{
+  margin:8px;
+  padding:10px 20px;
+  font-size:16px;
+}
+
+canvas{
+  background:#111;
+  display:none;
+  margin:auto;
+  border:2px solid #555;
+}
+
+.modal{
+  position:fixed;
+  top:0;left:0;
+  width:100%;height:100%;
+  background:rgba(0,0,0,0.7);
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+
+.modal.hidden{display:none;}
+
+.modal-box{
+  background:#222;
+  padding:20px;
+  border-radius:10px;
+}
+</style>
 </head>
+
 <body>
 
-<!-- ========================= -->
-<!-- 로그인 화면 -->
-<!-- ========================= -->
+<!-- 로그인 -->
 <div id="loginScreen" class="screen">
   <h1>NEON DODGE</h1>
   <input id="nameInput" placeholder="닉네임 입력">
   <button id="startBtn">시작</button>
 </div>
 
-<!-- ========================= -->
-<!-- 메뉴 화면 -->
-<!-- ========================= -->
-<div id="menuScreen" class="screen" style="display:none;">
+<!-- 메뉴 -->
+<div id="menuScreen" class="screen hidden">
   <h2 id="coinText">코인: 0</h2>
   <h3 id="highScoreText">최고점수: 0</h3>
 
   <button id="gameStartBtn">게임 시작</button>
-  <button id="shopOpenBtn">스킨 상점</button>
+  <button id="shopBtn">스킨 상점</button>
 
-  <div style="margin-top:15px;">
-    <button class="diffBtn" data-diff="easy">EASY</button>
-    <button class="diffBtn" data-diff="normal">NORMAL</button>
-    <button class="diffBtn" data-diff="hard">HARD</button>
+  <div>
+    <button data-diff="easy">EASY</button>
+    <button data-diff="normal">NORMAL</button>
+    <button data-diff="hard">HARD</button>
   </div>
 </div>
 
-<!-- ========================= -->
-<!-- 게임 캔버스 -->
-<!-- ========================= -->
-<canvas id="gameCanvas" width="400" height="600" style="display:none;"></canvas>
+<canvas id="gameCanvas" width="400" height="600"></canvas>
 
-<!-- ========================= -->
-<!-- 상점 모달 -->
-<!-- ========================= -->
-<div id="shopModal" style="
-  display:none;
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.7);
-  justify-content:center;
-  align-items:center;
-">
-  <div style="
-    background:#111;
-    padding:20px;
-    border-radius:10px;
-    text-align:center;
-    color:white;
-  ">
+<!-- 상점 -->
+<div id="shopModal" class="modal hidden">
+  <div class="modal-box">
     <h2>스킨 상점</h2>
-
-    <button class="skinBtn" data-skin="default">기본 (무료)</button><br>
-    <button class="skinBtn" data-skin="lime">라임 (100)</button><br>
-    <button class="skinBtn" data-skin="magenta">마젠타 (200)</button><br>
-    <button class="skinBtn" data-skin="gold">골드 (500)</button><br>
-    <button class="skinBtn" data-skin="cyan">시안 (300)</button><br>
-    <button class="skinBtn" data-skin="orange">오렌지 (250)</button><br>
-    <button class="skinBtn" data-skin="purple">퍼플 (400)</button><br>
-    <button class="skinBtn" data-skin="red">레드 (350)</button><br>
-    <button class="skinBtn" data-skin="blue">블루 (150)</button><br><br>
-
+    <div id="skinList"></div>
     <button id="closeShopBtn">닫기</button>
   </div>
 </div>
