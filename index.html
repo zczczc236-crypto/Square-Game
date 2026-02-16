@@ -7,17 +7,20 @@
 
 <link rel="stylesheet" href="./style.css">
 </head>
-
 <body>
 
-<!-- 로그인 -->
+<!-- ========================= -->
+<!-- 로그인 화면 -->
+<!-- ========================= -->
 <div id="loginScreen" class="screen">
   <h1>NEON DODGE</h1>
   <input id="nameInput" placeholder="닉네임 입력">
   <button id="startBtn">시작</button>
 </div>
 
-<!-- 메뉴 -->
+<!-- ========================= -->
+<!-- 메뉴 화면 -->
+<!-- ========================= -->
 <div id="menuScreen" class="screen" style="display:none;">
   <h2 id="coinText">코인: 0</h2>
   <h3 id="highScoreText">최고점수: 0</h3>
@@ -25,28 +28,52 @@
   <button id="gameStartBtn">게임 시작</button>
   <button id="shopOpenBtn">스킨 상점</button>
 
-  <div>
+  <div style="margin-top:15px;">
     <button class="diffBtn" data-diff="easy">EASY</button>
     <button class="diffBtn" data-diff="normal">NORMAL</button>
     <button class="diffBtn" data-diff="hard">HARD</button>
   </div>
 </div>
 
+<!-- ========================= -->
+<!-- 게임 캔버스 -->
+<!-- ========================= -->
 <canvas id="gameCanvas" width="400" height="600" style="display:none;"></canvas>
 
-<!-- 상점 -->
-<div id="shopModal" class="modal" style="display:none;">
-  <div class="modal-box">
+<!-- ========================= -->
+<!-- 상점 모달 -->
+<!-- ========================= -->
+<div id="shopModal" style="
+  display:none;
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,0.7);
+  justify-content:center;
+  align-items:center;
+">
+  <div style="
+    background:#111;
+    padding:20px;
+    border-radius:10px;
+    text-align:center;
+    color:white;
+  ">
     <h2>스킨 상점</h2>
-    <button class="skinBtn" data-skin="default">기본 (무료)</button>
-    <button class="skinBtn" data-skin="lime">라임 (100)</button>
-    <button class="skinBtn" data-skin="magenta">마젠타 (200)</button>
-    <button class="skinBtn" data-skin="gold">골드 (500)</button>
+
+    <button class="skinBtn" data-skin="default">기본 (무료)</button><br>
+    <button class="skinBtn" data-skin="lime">라임 (100)</button><br>
+    <button class="skinBtn" data-skin="magenta">마젠타 (200)</button><br>
+    <button class="skinBtn" data-skin="gold">골드 (500)</button><br>
+    <button class="skinBtn" data-skin="cyan">시안 (300)</button><br>
+    <button class="skinBtn" data-skin="orange">오렌지 (250)</button><br>
+    <button class="skinBtn" data-skin="purple">퍼플 (400)</button><br>
+    <button class="skinBtn" data-skin="red">레드 (350)</button><br>
+    <button class="skinBtn" data-skin="blue">블루 (150)</button><br><br>
+
     <button id="closeShopBtn">닫기</button>
   </div>
 </div>
 
 <script src="./script.js"></script>
-
 </body>
 </html>
