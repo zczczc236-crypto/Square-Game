@@ -273,6 +273,7 @@ function closeShop(){
 function buySkin(type){
   let cost=0;
   if(type==="lime") cost=100;
+   if(type==="blue") cost=150;
   if(type==="magenta") cost=200;
   if(type==="orange") cost=250;
   if(type==="cyan") cost=300;
