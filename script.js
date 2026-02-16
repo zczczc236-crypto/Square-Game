@@ -13,6 +13,7 @@ const shopBtn = document.getElementById("shopBtn");
 const closeShopBtn = document.getElementById("closeShopBtn");
 const coinText = document.getElementById("coinText");
 const highScoreText = document.getElementById("highScoreText");
+const nameInput = document.getElementById("nameInput");
 
 // ===========================
 //  ❗ 오디오 안전 재생 준비
@@ -36,7 +37,7 @@ function initAudio() {
     bgm.currentTime = 0;
     audioReady = true;
     console.log("Audio unlocked!");
-  }).catch(()=>{});
+  }).catch(() => {});
 
   document.removeEventListener("click", initAudio);
   document.removeEventListener("touchstart", initAudio);
@@ -44,9 +45,10 @@ function initAudio() {
 
 document.addEventListener("click", initAudio, { once: true });
 document.addEventListener("touchstart", initAudio, { once: true });
-let canvas = document.getElementById("gameCanvas");
-let ctx = canvas.getContext("2d");
 
+// ===========================
+//  ❗ 게임 데이터
+// ===========================
 let playerName = "";
 let coins = 0;
 let highScore = 0;
@@ -62,97 +64,101 @@ let speedMultiplier = 1;
 let player = { x: 180, y: 550, size: 30, speed: 6 };
 let obstacles = [];
 
-// =========================
-// 강제 초기화 (캐시 문제 방지)
-// =========================
+// ===========================
+//  ❗ 초기 화면 설정
+// ===========================
 window.onload = () => {
-  document.getElementById("loginScreen").style.display = "block";
-  document.getElementById("menuScreen").style.display = "none";
-  document.getElementById("gameCanvas").style.display = "none";
-  document.getElementById("shopModal").style.display = "none";
+  loginScreen.style.display = "block";
+  menuScreen.style.display = "none";
+  canvas.style.display = "none";
+  shopModal.style.display = "none";
 };
 
-// =========================
-// 로그인
-// =========================
+// ===========================
+//  ❗ 로그인
+// ===========================
 function login() {
-  let input = document.getElementById("nameInput");
-  if (!input.value.trim()) return alert("닉네임 입력");
+  if (!nameInput.value.trim()) return alert("닉네임 입력");
 
-  playerName = input.value.trim();
+  playerName = nameInput.value.trim();
 
   let save = JSON.parse(localStorage.getItem("save_" + playerName));
   if (save) {
-    coins = save.coins;
-    highScore = save.highScore;
-    currentSkin = save.skin;
+    coins = save.coins || 0;
+    highScore = save.highScore || 0;
+    currentSkin = save.skin || "default";
   }
 
-  document.getElementById("loginScreen").style.display = "none";
-  document.getElementById("menuScreen").style.display = "block";
+  loginScreen.style.display = "none";
+  menuScreen.style.display = "block";
 
   updateMenu();
   saveGame();
 }
 
-// =========================
-// 저장
-// =========================
+// ===========================
+//  ❗ 저장
+// ===========================
 function saveGame() {
-  localStorage.setItem("save_" + playerName,
-    JSON.stringify({ coins, highScore, skin: currentSkin })
-  );
+  if (!playerName) return;
+  localStorage.setItem("save_" + playerName, JSON.stringify({
+    coins,
+    highScore,
+    skin: currentSkin
+  }));
 }
 
 function updateMenu() {
-  document.getElementById("coinText").innerText = "코인: " + coins;
-  document.getElementById("highScoreText").innerText = "최고점수: " + highScore;
+  coinText.innerText = "코인: " + coins;
+  highScoreText.innerText = "최고점수: " + highScore;
 }
 
-// =========================
-// 난이도
-// =========================
+// ===========================
+//  ❗ 난이도 설정
+// ===========================
 function setDifficulty(mode) {
   difficulty = mode;
 
-  if (mode === "easy") {
-    spawnRate = 0.02;
-    speedMultiplier = 0.8;
-  }
-  if (mode === "normal") {
-    spawnRate = 0.03;
-    speedMultiplier = 1;
-  }
-  if (mode === "hard") {
-    spawnRate = 0.05;
-    speedMultiplier = 1.4;
+  switch(mode) {
+    case "easy":
+      spawnRate = 0.02;
+      speedMultiplier = 0.8;
+      break;
+    case "normal":
+      spawnRate = 0.03;
+      speedMultiplier = 1;
+      break;
+    case "hard":
+      spawnRate = 0.05;
+      speedMultiplier = 1.4;
+      break;
   }
 
   alert("난이도: " + mode);
 }
 
-// =========================
-// 게임 시작
-// =========================
+// ===========================
+//  ❗ 게임 시작
+// ===========================
 function startGame() {
-  document.getElementById("menuScreen").style.display = "none";
+  menuScreen.style.display = "none";
   canvas.style.display = "block";
 
   score = 0;
   obstacles = [];
-  player.x = 180;
+  player.x = canvas.width / 2 - player.size / 2;
 
   gameRunning = true;
   requestAnimationFrame(gameLoop);
 }
 
-// =========================
-// 루프
-// =========================
+// ===========================
+//  ❗ 게임 루프
+// ===========================
 function gameLoop() {
   if (!gameRunning) return;
 
-  ctx.clearRect(0,0,canvas.width,canvas.height);
+  ctx.clearRect(0, 0, canvas.width, canvas.height);
 
   drawPlayer();
   updateObstacles();
@@ -162,43 +168,46 @@ function gameLoop() {
   if (score > highScore) highScore = score;
 
   ctx.fillStyle = "white";
-  ctx.fillText("Score: " + score, 10, 20);
+  ctx.font = "20px Arial";
+  ctx.fillText("Score: " + score, 10, 25);
 
   requestAnimationFrame(gameLoop);
 }
 
-// =========================
-// 플레이어
-// =========================
+// ===========================
+//  ❗ 플레이어 그리기
+// ===========================
 function drawPlayer() {
   ctx.fillStyle = getSkinColor();
   ctx.fillRect(player.x, player.y, player.size, player.size);
 }
 
 function getSkinColor() {
-  if (currentSkin === "lime") return "lime";
-  if (currentSkin === "magenta") return "magenta";
-  if (currentSkin === "gold") return "gold";
-  return "cyan";
+  switch(currentSkin) {
+    case "lime": return "lime";
+    case "magenta": return "magenta";
+    case "gold": return "gold";
+    default: return "cyan";
+  }
 }
 
-// =========================
-// 장애물
-// =========================
+// ===========================
+//  ❗ 장애물
+// ===========================
 function updateObstacles() {
   if (Math.random() < spawnRate) {
     obstacles.push({
       x: Math.random() * (canvas.width - 30),
       y: -30,
       size: 30,
-      speed: (4 + score*0.002) * speedMultiplier
+      speed: (4 + score * 0.002) * speedMultiplier
     });
   }
 
   for (let o of obstacles) {
     o.y += o.speed;
 
-    if (collision(player,o)) {
+    if (collision(player, o)) {
       endGame();
       return;
     }
@@ -209,88 +218,96 @@ function updateObstacles() {
 
 function drawObstacles() {
   ctx.fillStyle = "red";
-  for (let o of obstacles) {
-    ctx.fillRect(o.x,o.y,o.size,o.size);
-  }
+  obstacles.forEach(o => ctx.fillRect(o.x, o.y, o.size, o.size));
 }
 
-function collision(a,b){
+function collision(a, b) {
   return (
-    a.x < b.x+b.size &&
-    a.x+a.size > b.x &&
-    a.y < b.y+b.size &&
-    a.y+a.size > b.y
+    a.x < b.x + b.size &&
+    a.x + a.size > b.x &&
+    a.y < b.y + b.size &&
+    a.y + a.size > b.y
   );
 }
 
-// =========================
-// 종료
-// =========================
-function endGame(){
-  gameRunning=false;
-  canvas.style.display="none";
-  document.getElementById("menuScreen").style.display="block";
+// ===========================
+//  ❗ 게임 종료
+// ===========================
+function endGame() {
+  gameRunning = false;
+  canvas.style.display = "none";
+  menuScreen.style.display = "block";
 
-  coins += Math.floor(score/10);
+  coins += Math.floor(score / 10);
   saveGame();
   updateMenu();
 }
 
-// =========================
-// 이동 (PC)
-// =========================
-document.addEventListener("keydown", e=>{
-  if(!gameRunning) return;
+// ===========================
+//  ❗ 이동 (PC)
+– ===========================
+document.addEventListener("keydown", e => {
+  if (!gameRunning) return;
 
-  if(e.key==="ArrowLeft") player.x-=player.speed;
-  if(e.key==="ArrowRight") player.x+=player.speed;
+  if (e.key === "ArrowLeft") player.x -= player.speed;
+  if (e.key === "ArrowRight") player.x += player.speed;
 
-  player.x=Math.max(0,Math.min(canvas.width-player.size,player.x));
+  player.x = Math.max(0, Math.min(canvas.width - player.size, player.x));
 });
 
-// =========================
-// 모바일 터치
-// =========================
-canvas.addEventListener("touchmove", e=>{
-  if(!gameRunning) return;
+// ===========================
+//  ❗ 이동 (모바일 터치)
+– ===========================
+canvas.addEventListener("touchmove", e => {
+  if (!gameRunning) return;
 
-  let rect=canvas.getBoundingClientRect();
-  let x=e.touches[0].clientX-rect.left;
-  player.x=x-player.size/2;
+  let rect = canvas.getBoundingClientRect();
+  let x = e.touches[0].clientX - rect.left;
+  player.x = x - player.size / 2;
 });
 
-// =========================
-// 상점
-// =========================
-function openShop(){
-  document.getElementById("shopModal").style.display="block";
+// ===========================
+//  ❗ 상점
+// ===========================
+function openShop() {
+  shopModal.style.display = "block";
 }
 
-function closeShop(){
-  document.getElementById("shopModal").style.display="none";
+function closeShop() {
+  shopModal.style.display = "none";
 }
 
-function buySkin(type){
-  let cost=0;
-  if(type==="lime") cost=100;
-  if(type==="blue") cost=150;
-  if(type==="magenta") cost=200;
-  if(type==="orange") cost=250;
-  if(type==="cyan") cost=300;
-  if(type==="red") cost=350;
-  if(type==="purple") cost=400;
-  if(type==="gold") cost=500;
+function buySkin(type) {
+  let costMap = {
+    lime: 100,
+    blue: 150,
+    magenta: 200,
+    orange: 250,
+    cyan: 300,
+    red: 350,
+    purple: 400,
+    gold: 500
+  };
   
+  let cost = costMap[type] || 0;
 
-  if(type!=="default" && coins<cost){
+  if (type !== "default" && coins < cost) {
     alert("코인 부족");
     return;
   }
 
-  if(type!=="default") coins-=cost;
+  if (type !== "default") coins -= cost;
 
-  currentSkin=type;
+  currentSkin = type;
   saveGame();
   updateMenu();
   closeShop();
 }
+
+// ===========================
+//  ❗ 버튼 이벤트 연결
+// ===========================
+gameStartBtn.addEventListener("click", startGame);
+shopBtn.addEventListener("click", openShop);
+closeShopBtn.addEventListener("click", closeShop);
+startBtn.addEventListener("click", login);
