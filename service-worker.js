@@ -1,23 +1,25 @@
-const CACHE_NAME="neon-cache-v3";
+const CACHE_NAME = "square-cache-v1";
 
-const urlsToCache=[
+const urlsToCache = [
   "./",
   "./index.html",
   "./style.css",
   "./script.js",
-  "./manifest.json"
+  "./manifest.json",
+  "./icons/icon-192.png",
+  "./icons/icon-512.png"
 ];
 
-self.addEventListener("install",event=>{
+self.addEventListener("install", event => {
   event.waitUntil(
     caches.open(CACHE_NAME)
-      .then(cache=>cache.addAll(urlsToCache))
+      .then(cache => cache.addAll(urlsToCache))
   );
 });
 
-self.addEventListener("fetch",event=>{
+self.addEventListener("fetch", event => {
   event.respondWith(
     caches.match(event.request)
-      .then(response=>response||fetch(event.request))
+      .then(response => response || fetch(event.request))
   );
 });
