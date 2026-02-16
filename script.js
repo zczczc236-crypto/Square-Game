@@ -220,3 +220,37 @@ document.addEventListener("keydown", (e) => {
     player.style.left = left + speed + "px";
   }
 });
+
+// ==========================
+// 모바일 터치 이동
+// ==========================
+const gameArea = document.getElementById("game");
+
+function movePlayerTo(x) {
+  if (!player) return;
+
+  const rect = gameArea.getBoundingClientRect();
+  let newX = x - rect.left - (player.offsetWidth / 2);
+
+  if (newX < 0) newX = 0;
+  if (newX > rect.width - player.offsetWidth)
+    newX = rect.width - player.offsetWidth;
+
+  player.style.left = newX + "px";
+}
+
+// 터치 시작
+gameArea.addEventListener("touchstart", (e) => {
+  movePlayerTo(e.touches[0].clientX);
+});
+
+// 터치 드래그
+gameArea.addEventListener("touchmove", (e) => {
+  movePlayerTo(e.touches[0].clientX);
+});
+
+// 마우스 클릭도 지원
+gameArea.addEventListener("mousedown", (e) => {
+  movePlayerTo(e.clientX);
+});
+
