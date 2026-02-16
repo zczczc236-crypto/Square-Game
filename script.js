@@ -1,8 +1,5 @@
 // ===============================
-// NEON DODGE - FINAL STABLE BUILD
-// 로그인(오프라인 저장) + 자동저장
-// 점수 / 코인 / 상점 / 스킨
-// PWA 대응 / 클릭 오류 수정
+// NEON DODGE - CLEAN START VERSION
 // ===============================
 
 let canvas = document.getElementById("gameCanvas");
@@ -26,12 +23,28 @@ let player = {
 let obstacles = [];
 
 // ===============================
-// 로그인 (오프라인 자동저장)
+// 🔥 페이지 로드시 강제 초기화
+// ===============================
+
+window.onload = function () {
+  document.getElementById("loginScreen").style.display = "block";
+  document.getElementById("menuScreen").style.display = "none";
+  document.getElementById("gameCanvas").style.display = "none";
+
+  const shop = document.getElementById("shopModal");
+  if (shop) shop.classList.add("hidden");
+};
+
+// ===============================
+// 로그인
 // ===============================
 
 function login() {
   const nameInput = document.getElementById("nameInput");
-  if (!nameInput.value.trim()) return alert("이름 입력");
+  if (!nameInput.value.trim()) {
+    alert("닉네임 입력");
+    return;
+  }
 
   playerName = nameInput.value.trim();
 
@@ -41,13 +54,22 @@ function login() {
     coins = save.coins;
     highScore = save.highScore;
     currentSkin = save.skin;
+  } else {
+    coins = 0;
+    highScore = 0;
+    currentSkin = "default";
   }
 
   document.getElementById("loginScreen").style.display = "none";
   document.getElementById("menuScreen").style.display = "block";
 
   updateMenu();
+  saveGame();
 }
+
+// ===============================
+// 저장
+// ===============================
 
 function saveGame() {
   if (!playerName) return;
@@ -62,7 +84,7 @@ function saveGame() {
 }
 
 // ===============================
-// 메뉴 업데이트
+// 메뉴
 // ===============================
 
 function updateMenu() {
@@ -199,7 +221,7 @@ document.addEventListener("keydown", e => {
 });
 
 // ===============================
-// 상점 (클릭 오류 완전 수정)
+// 상점
 // ===============================
 
 function openShop() {
@@ -231,7 +253,7 @@ function buySkin(type) {
 }
 
 // ===============================
-// PWA Service Worker 등록
+// PWA 등록
 // ===============================
 
 if ("serviceWorker" in navigator) {
