@@ -274,7 +274,12 @@ function buySkin(type){
   let cost=0;
   if(type==="lime") cost=100;
   if(type==="magenta") cost=200;
+  if(type==="orange") cost=250;
+  if(type==="cyan") cost=300;
+  if(type==="red") cost=350;
+  if(type==="purple") cost=400;
   if(type==="gold") cost=500;
+  
 
   if(type!=="default" && coins<cost){
     alert("코인 부족");
