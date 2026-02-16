@@ -32,6 +32,7 @@ function initAudio() {
   sfxBuy = new Audio("assets/audio/buy.wav");
   sfxGameOver = new Audio("assets/audio/gameover.wav");
 
+  // 모바일/PC에서 자동 재생 방지 때문에 클릭 시 잠금 해제
   bgm.play().then(() => {
     bgm.pause();
     bgm.currentTime = 0;
@@ -150,6 +151,8 @@ function startGame() {
 
   gameRunning = true;
   requestAnimationFrame(gameLoop);
+
+  if (audioReady) bgm.play();
 }
 
 // ===========================
@@ -246,11 +249,17 @@ function endGame() {
   coins += Math.floor(score / 10);
   saveGame();
   updateMenu();
+
+  if (audioReady) {
+    bgm.pause();
+    bgm.currentTime = 0;
+    sfxGameOver.play();
+  }
 }
 
 // ===========================
 //  ❗ 이동 (PC)
-– ===========================
+// ===========================
 document.addEventListener("keydown", e => {
   if (!gameRunning) return;
 
@@ -262,7 +271,7 @@ document.addEventListener("keydown", e => {
 
 // ===========================
 //  ❗ 이동 (모바일 터치)
-– ===========================
+// ===========================
 canvas.addEventListener("touchmove", e => {
   if (!gameRunning) return;
 
@@ -312,7 +321,7 @@ function buySkin(type) {
 // ===========================
 //  ❗ 버튼 이벤트 연결
 // ===========================
+startBtn.addEventListener("click", login);
 gameStartBtn.addEventListener("click", startGame);
 shopBtn.addEventListener("click", openShop);
 closeShopBtn.addEventListener("click", closeShop);
-startBtn.addEventListener("click", login);
