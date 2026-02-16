@@ -262,11 +262,11 @@ function moveTouch(e) {
 // ===============================
 
 function openShop() {
-  document.getElementById("shopModal").classList.remove("hidden");
+  document.getElementById("shopModal").classList.add("active");
 }
 
 function closeShop() {
-  document.getElementById("shopModal").classList.add("hidden");
+  document.getElementById("shopModal").classList.remove("active");
 }
 
 function buySkin(type) {
