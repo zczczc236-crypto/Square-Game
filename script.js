@@ -5,50 +5,51 @@ let player;
 let score = 0;
 let coins = 0;
 let difficulty = "normal";
+let speed = 5;
 let gameInterval;
 let autoSaveInterval;
-
-let skins = {
-  default: { price: 0, color: "white" },
-  lime: { price: 100, color: "lime" },
-  magenta: { price: 200, color: "magenta" },
-  gold: { price: 500, color: "gold" },
-  cyan: { price: 300, color: "cyan" },
-  red: { price: 300, color: "red" },
-  purple: { price: 400, color: "purple" },
-  rainbow: { price: 800, color: "linear-gradient(45deg, red, orange, yellow, green, blue)" }
-};
-
-let ownedSkins = ["default"];
+let unlockedSkins = ["default"];
 let currentSkin = "default";
 
 // ==========================
 // 오디오
 // ==========================
-const bgm = new Audio("assets/audio/bgm.mp3");
-bgm.loop = true;
-bgm.volume = 0.4;
+let bgm;
+let scoreSound;
+let gameoverSound;
+let buySound;
 
-const scoreSound = new Audio("assets/audio/score.wav");
-const gameoverSound = new Audio("assets/audio/gameover.wav");
-const buySound = new Audio("assets/audio/buy.wav");
+function initAudio() {
+  bgm = new Audio("assets/audio/bgm.mp3");
+  bgm.loop = true;
+  bgm.volume = 0.4;
+
+  scoreSound = new Audio("assets/audio/score.wav");
+  gameoverSound = new Audio("assets/audio/gameover.wav");
+  buySound = new Audio("assets/audio/buy.wav");
+
+  document.removeEventListener("click", initAudio);
+}
 
 // ==========================
-// 시작
+// 시작시 실행
 // ==========================
 window.onload = () => {
   loadGame();
   document.getElementById("nicknameModal").classList.remove("hidden");
+  document.addEventListener("click", initAudio, { once: true });
 };
 
 // ==========================
-// 닉네임 설정
+// 닉네임 시작
 // ==========================
-function setNickname() {
-  const name = document.getElementById("nicknameInput").value;
-  if (!name) return alert("닉네임 입력해라");
-  localStorage.setItem("nickname", name);
+function startWithNickname() {
+  const nickname = document.getElementById("nicknameInput").value;
+  if (!nickname) return alert("닉네임 입력");
+
+  localStorage.setItem("nickname", nickname);
   document.getElementById("nicknameModal").classList.add("hidden");
+
   startGame();
 }
 
@@ -57,30 +58,13 @@ function setNickname() {
 // ==========================
 function startGame() {
   player = document.getElementById("player");
-  bgm.play();
+
+  if (bgm) bgm.play().catch(()=>{});
+
   applyDifficulty();
+
   gameInterval = setInterval(gameLoop, 100);
   autoSaveInterval = setInterval(saveGame, 5000);
-}
-
-// ==========================
-// 난이도 설정
-// ==========================
-function setDifficulty(level) {
-  difficulty = level;
-  applyDifficulty();
-}
-
-function applyDifficulty() {
-  const body = document.body;
-
-  if (difficulty === "easy") {
-    body.style.background = "linear-gradient(#87CEEB, #ffffff)";
-  } else if (difficulty === "normal") {
-    body.style.background = "linear-gradient(#333, #111)";
-  } else {
-    body.style.background = "linear-gradient(#300000, #000000)";
-  }
 }
 
 // ==========================
@@ -88,15 +72,17 @@ function applyDifficulty() {
 // ==========================
 function gameLoop() {
   score++;
-  coins += 1;
+  coins++;
+
   document.getElementById("score").innerText = score;
   document.getElementById("coins").innerText = coins;
 
-  if (score % 50 === 0) {
-    scoreSound.play();
+  if (score % 50 === 0 && scoreSound) {
+    scoreSound.currentTime = 0;
+    scoreSound.play().catch(()=>{});
   }
 
-  if (difficulty === "hard" && score > 500) {
+  if (score >= 1000) {
     gameOver();
   }
 }
@@ -107,13 +93,37 @@ function gameLoop() {
 function gameOver() {
   clearInterval(gameInterval);
   clearInterval(autoSaveInterval);
-  gameoverSound.play();
-  saveGame();
+
+  if (gameoverSound) gameoverSound.play().catch(()=>{});
+
   alert("게임 오버!");
 }
 
 // ==========================
-// 상점
+// 난이도 설정
+// ==========================
+function setDifficulty(mode) {
+  difficulty = mode;
+  applyDifficulty();
+}
+
+function applyDifficulty() {
+  const game = document.getElementById("game");
+
+  if (difficulty === "easy") {
+    speed = 3;
+    game.style.background = "linear-gradient(to bottom, #1e3c72, #2a5298)";
+  } else if (difficulty === "normal") {
+    speed = 5;
+    game.style.background = "linear-gradient(to bottom, #000000, #434343)";
+  } else {
+    speed = 8;
+    game.style.background = "linear-gradient(to bottom, #200122, #6f0000)";
+  }
+}
+
+// ==========================
+// 상점 열기/닫기
 // ==========================
 function openShop() {
   document.getElementById("shopModal").classList.remove("hidden");
@@ -123,54 +133,90 @@ function closeShop() {
   document.getElementById("shopModal").classList.add("hidden");
 }
 
+// ==========================
+// 스킨 구매
+// ==========================
+const skinPrices = {
+  default: 0,
+  lime: 100,
+  magenta: 200,
+  gold: 500,
+  cyan: 300,
+  orange: 250,
+  purple: 400,
+  red: 350,
+  blue: 150
+};
+
 function buySkin(name) {
-  if (ownedSkins.includes(name)) {
+  if (unlockedSkins.includes(name)) {
     currentSkin = name;
     applySkin();
-    closeShop();
     return;
   }
 
-  if (coins >= skins[name].price) {
-    coins -= skins[name].price;
-    ownedSkins.push(name);
+  if (coins >= skinPrices[name]) {
+    coins -= skinPrices[name];
+    unlockedSkins.push(name);
     currentSkin = name;
-    buySound.play();
+
+    if (buySound) buySound.play().catch(()=>{});
+
     applySkin();
-    closeShop();
+    saveGame();
   } else {
     alert("코인 부족");
   }
 }
 
 function applySkin() {
-  if (skins[currentSkin].color.includes("linear-gradient")) {
-    player.style.background = skins[currentSkin].color;
-  } else {
-    player.style.background = skins[currentSkin].color;
-  }
+  player.style.background = currentSkin;
 }
 
 // ==========================
-// 저장 / 불러오기
+// 자동 저장
 // ==========================
 function saveGame() {
-  localStorage.setItem("coins", coins);
-  localStorage.setItem("ownedSkins", JSON.stringify(ownedSkins));
-  localStorage.setItem("currentSkin", currentSkin);
-  localStorage.setItem("difficulty", difficulty);
+  const data = {
+    score,
+    coins,
+    difficulty,
+    unlockedSkins,
+    currentSkin
+  };
+
+  localStorage.setItem("gameSave", JSON.stringify(data));
 }
 
 function loadGame() {
-  coins = parseInt(localStorage.getItem("coins")) || 0;
-  ownedSkins = JSON.parse(localStorage.getItem("ownedSkins")) || ["default"];
-  currentSkin = localStorage.getItem("currentSkin") || "default";
-  difficulty = localStorage.getItem("difficulty") || "normal";
+  const save = localStorage.getItem("gameSave");
+  if (!save) return;
+
+  const data = JSON.parse(save);
+
+  score = data.score || 0;
+  coins = data.coins || 0;
+  difficulty = data.difficulty || "normal";
+  unlockedSkins = data.unlockedSkins || ["default"];
+  currentSkin = data.currentSkin || "default";
+
+  document.getElementById("score").innerText = score;
+  document.getElementById("coins").innerText = coins;
 }
 
 // ==========================
-// 초기 UI 업데이트
+// 키보드 이동
 // ==========================
-setInterval(() => {
-  document.getElementById("coins").innerText = coins;
-}, 500);
+document.addEventListener("keydown", (e) => {
+  if (!player) return;
+
+  const left = player.offsetLeft;
+
+  if (e.key === "ArrowLeft" && left > 0) {
+    player.style.left = left - speed + "px";
+  }
+
+  if (e.key === "ArrowRight" && left < 350) {
+    player.style.left = left + speed + "px";
+  }
+});
