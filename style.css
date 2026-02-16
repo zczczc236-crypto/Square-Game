@@ -10,6 +10,12 @@ body {
   padding-top: 100px;
 }
 
+#menuScreen,
+#gameCanvas,
+#shopModal {
+  display: none;
+}
+
 button {
   margin: 10px;
   padding: 10px 20px;
@@ -28,21 +34,13 @@ canvas {
   position: fixed;
   inset: 0;
   background: rgba(0,0,0,0.7);
-  z-index: 9999;
-
-  /* 기본은 숨김 */
-  display: none;
+  z-index: 1000;
 }
 
-.modal.active {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
-
-.modal-content {
+.modal-box {
   background: #111;
   padding: 25px;
   border-radius: 12px;
-  text-align: center;
+  width: 250px;
+  margin: 200px auto;
 }
