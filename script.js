@@ -185,7 +185,12 @@ function drawPlayer() {
 function getSkinColor() {
   switch(currentSkin) {
     case "lime": return "lime";
+    case "blue": return "blue";
     case "magenta": return "magenta";
+    case "orange": return "orange";
+    case "cyan": return "cyan";
+    case "red": return "red";
+    case "purple": return "purple";
     case "gold": return "gold";
     default: return "cyan";
   }
