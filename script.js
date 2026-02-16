@@ -35,8 +35,8 @@ window.onload = function () {
   document.getElementById("menuScreen").style.display = "none";
   document.getElementById("gameCanvas").style.display = "none";
 
-  const shop = document.getElementById("shopModal");
-  if (shop) shop.classList.add("hidden");
+const shop = document.getElementById("shopModal");
+if (shop) shop.classList.remove("active");
 };
 
 // ===============================
