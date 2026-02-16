@@ -4,63 +4,54 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NEON DODGE</title>
-<style>
-body{
-  margin:0;
-  font-family:sans-serif;
-  background:#111;
-  color:white;
-  text-align:center;
-}
-.hidden{display:none;}
-button{margin:8px;padding:10px 20px;font-size:16px;}
-#gameCanvas{
-  background:#000;
-  border:2px solid #555;
-  display:none;
-  margin:auto;
-}
-.modal{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,0.7);
-  display:flex;
-  justify-content:center;
-  align-items:center;
-}
-.modal.hidden{display:none;}
-.modal-box{
-  background:#222;
-  padding:20px;
-  border-radius:10px;
-}
-</style>
+
+<link rel="manifest" href="./manifest.json">
+<link rel="stylesheet" href="./style.css">
 </head>
+
 <body>
 
-<div id="loginScreen">
+<!-- 로그인 -->
+<div id="loginScreen" class="screen">
   <h1>NEON DODGE</h1>
   <input id="nameInput" placeholder="닉네임 입력">
-  <button id="loginBtn">시작</button>
+  <button onclick="login()">시작</button>
 </div>
 
-<div id="menuScreen" class="hidden">
+<!-- 메뉴 -->
+<div id="menuScreen" class="screen">
   <h2 id="coinText">코인: 0</h2>
   <h3 id="highScoreText">최고점수: 0</h3>
-  <button id="startGameBtn">게임 시작</button>
-  <button id="shopBtn">스킨 상점</button>
+
+  <button onclick="startGame()">게임 시작</button>
+  <button onclick="openShop()">스킨 상점</button>
+
+  <div>
+    <button onclick="setDifficulty('easy')">EASY</button>
+    <button onclick="setDifficulty('normal')">NORMAL</button>
+    <button onclick="setDifficulty('hard')">HARD</button>
+  </div>
 </div>
 
 <canvas id="gameCanvas" width="400" height="600"></canvas>
 
-<div id="shopModal" class="modal hidden">
+<!-- 상점 -->
+<div id="shopModal" class="modal">
   <div class="modal-box">
     <h2>스킨 상점</h2>
-    <div id="skinList"></div>
-    <button id="closeShopBtn">닫기</button>
+    <button onclick="buySkin('default')">기본 (무료)</button>
+    <button onclick="buySkin('lime')">라임 (100)</button>
+    <button onclick="buySkin('blue')">블루 (150)</button>
+    <button onclick="buySkin('magenta')">마젠타 (200)</button>
+    <button onclick="buySkin('orange')">오렌지 (250)</button>
+    <button onclick="buySkin('cyan')">시안 (300)</button>
+    <button onclick="buySkin('red')">레드 (350)</button>
+    <button onclick="buySkin('purple')">퍼플 (400)</button>
+    <button onclick="buySkin('gold')">골드 (500)</button>
+    <button onclick="closeShop()">닫기</button>
   </div>
 </div>
 
-<script src="script.js"></script>
+<script src="./script.js"></script>
 </body>
 </html>
