@@ -1,26 +1,23 @@
 // ==========================
-// 🔊 오디오 시스템 (CSP 안전)
+// 오디오 세팅 (GitHub Pages 안전버전)
 // ==========================
-let bgm, sfxScore, sfxBuy, sfxGameOver;
-let audioReady = false;
+let bgm = new Audio("assets/audio/bgm.mp3");
+let sfxScore = new Audio("assets/audio/score.wav");
+let sfxBuy = new Audio("assets/audio/buy.wav");
+let sfxGameOver = new Audio("assets/audio/gameover.wav");
 
-function initAudio() {
-  if (audioReady) return;
+bgm.loop = true;
+bgm.volume = 0.4;
 
-  bgm = new Audio("./assets/audio/bgm.mp3");
-  bgm.loop = true;
-  bgm.volume = 0.4;
-
-  sfxScore = new Audio("./assets/audio/score.wav");
-  sfxBuy = new Audio("./assets/audio/buy.wav");
-  sfxGameOver = new Audio("./assets/audio/gameover.wav");
-
-  audioReady = true;
-  console.log("🔊 Audio Ready");
+function unlockAudio() {
+  bgm.play().then(() => {
+    bgm.pause();
+    bgm.currentTime = 0;
+  }).catch(()=>{});
 }
 
-document.addEventListener("click", initAudio, { once: true });
-document.addEventListener("touchstart", initAudio, { once: true });
+document.addEventListener("click", unlockAudio, { once: true });
+document.addEventListener("touchstart", unlockAudio, { once: true });
 
 // ==========================
 // 🎮 기본 변수
